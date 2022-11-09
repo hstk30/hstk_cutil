@@ -1,4 +1,3 @@
 # C util function
 
-Some useful C util function.
-
+some c util, like hash, data structure
