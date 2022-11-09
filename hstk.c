@@ -3,8 +3,13 @@
 
 void hstk_error_msg(char *msg)
 {
-    fprintf(stderr, "%s: %s\n", msg, strerror(errno));
+    fprintf(stderr, "Error: %s [%s]\n", msg, strerror(errno));
     exit(0);
+}
+
+void hstk_warn_msg(char *msg)
+{
+    fprintf(stderr, "Warn: %s\n", msg);
 }
 
 void *Malloc(size_t size)
