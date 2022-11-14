@@ -32,7 +32,7 @@ static int list_resize(struct HSTKList *lo, int newsize)
     return 0;
 }
 
-int list_append(struct HSTKList *lo, item_ty item)
+static int list_append(struct HSTKList *lo, item_ty item)
 {
     struct List *list = lo->attr;
     if (list->capacity == list->used &&
@@ -43,7 +43,7 @@ int list_append(struct HSTKList *lo, item_ty item)
 }
 
 
-int list_insert(struct HSTKList *lo, item_ty item, int pos)
+static int list_insert(struct HSTKList *lo, item_ty item, int pos)
 {
     struct List *list = lo->attr;
     int idx;
@@ -65,7 +65,7 @@ int list_insert(struct HSTKList *lo, item_ty item, int pos)
     return 0;
 }
 
-item_ty list_pop(struct HSTKList *lo)
+static item_ty list_pop(struct HSTKList *lo)
 {
     struct List *list = lo->attr;
     item_ty item;
@@ -76,7 +76,7 @@ item_ty list_pop(struct HSTKList *lo)
     return item;
 }
 
-int list_remove(struct HSTKList *lo, item_ty item)
+static int list_remove(struct HSTKList *lo, item_ty item)
 {
     struct List *list = lo->attr;
     int idx;
@@ -99,7 +99,7 @@ int list_remove(struct HSTKList *lo, item_ty item)
     return 0;
 }
 
-item_ty list_get_item(struct HSTKList *lo, int pos)
+static item_ty list_get_item(struct HSTKList *lo, int pos)
 {
     struct List *list = lo->attr;
     if (pos < 0 || pos > list->used)
@@ -108,13 +108,13 @@ item_ty list_get_item(struct HSTKList *lo, int pos)
     return list->items[pos];
 }
 
-int list_len(struct HSTKList *lo)
+static int list_len(struct HSTKList *lo)
 {
     struct List *list = lo->attr;
     return list->used;
 }
 
-int list_clear(struct HSTKList *lo)
+static int list_clear(struct HSTKList *lo)
 {
     struct List *list = lo->attr;
 
@@ -126,16 +126,7 @@ int list_clear(struct HSTKList *lo)
     return 0;
 }
 
-void list_destory(struct HSTKList *lo)
-{
-    struct List *list = lo->attr;
-    if (list->items != NULL)
-        Free(list->items);
-    Free(list);
-    Free(lo);
-}
-
-struct HSTKList *HSTK_list_init()
+struct HSTKList *HSTK_list_new()
 {
     struct HSTKList *list_obj = Malloc(sizeof(struct HSTKList));
     struct List *list = Malloc(sizeof(struct List));
@@ -150,7 +141,15 @@ struct HSTKList *HSTK_list_init()
     list_obj->get_item = &list_get_item;
     list_obj->len = &list_len;
     list_obj->clear = &list_clear;
-    list_obj->destory = &list_destory;
     list_obj->attr = list;
     return list_obj;
+}
+
+void HSTK_list_destory(struct HSTKList *lo)
+{
+    struct List *list = lo->attr;
+    if (list->items != NULL)
+        Free(list->items);
+    Free(list);
+    Free(lo);
 }

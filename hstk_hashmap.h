@@ -19,10 +19,10 @@ struct HSTKHashmap {
     int     (* contains)    (struct HSTKHashmap *, key_ty);
     int     (* len)         (struct HSTKHashmap *);
     int     (* clear)       (struct HSTKHashmap *);
-    void    (* destory)     (struct HSTKHashmap *);
     void    *attr;
 };
 
-struct HSTKHashmap *HSTK_hashmap_init();
+struct HSTKHashmap *HSTK_hashmap_new();
+void HSTK_hashmap_destory(struct HSTKHashmap *);
 
 #endif /* ifndef HSTK_HASHMAP_H_ */

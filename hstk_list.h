@@ -18,11 +18,11 @@ struct HSTKList {
     item_ty (* get_item)   (struct HSTKList *, int);
     int     (* len)        (struct HSTKList *);
     int     (* clear)      (struct HSTKList *);
-    void    (* destory)    (struct HSTKList *);
     void    *attr;  /* should not access by user */
 };
 
-struct HSTKList *HSTK_list_init();
+struct HSTKList *HSTK_list_new();
+void HSTK_list_destory(struct HSTKList *);
 
 #endif /* ifndef HSTK_LIST_H_ */
 

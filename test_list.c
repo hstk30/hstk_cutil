@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
     struct unit item5 = (struct unit) {.a = 4, .p = &item4};
     struct unit item6 = (struct unit) {.a = 5, .p = &item5};
 
-    struct HSTKList *list = HSTK_list_init();
+    struct HSTKList *list = HSTK_list_new();
     printf("append item: %d\n", item1.a);
     list->append(list, &item1);
     print_unit_list(list);
@@ -85,6 +85,6 @@ int main(int argc, char *argv[])
     list->clear(list);
     print_unit_list(list);
 
-    list->destory(list);
+    HSTK_list_destory(list);
 }
 
