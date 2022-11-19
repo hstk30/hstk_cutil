@@ -1,21 +1,20 @@
 #include "hstk_list.h"
 #include "hstk.h"
-#include <stdio.h>
 
 
-struct List {
+struct TKList_ {
     unsigned int capacity;
     unsigned int used;
 
     item_ty *items;
 };
 
-static int list_resize(struct HSTKList *lo, int newsize)
+
+static int resize(TKList li, int newsize)
 {
 
     int new_cap;
     item_ty *new_items;
-    struct List *list = lo->attr;
     /* Reference from Cpython
      * This over-allocates proportional to the list size, making room
 	 * for additional growth.  The over-allocation is mild, but is
@@ -26,130 +25,175 @@ static int list_resize(struct HSTKList *lo, int newsize)
 	 */
 	new_cap = (newsize >> 3) + (newsize < 9 ? 3 : 6) + newsize;
     /* fprintf(stdout, "List resize for %d to %d\n", list->capacity, new_cap); */
-    new_items = Realloc(list->items, new_cap * sizeof(item_ty));
-    list->items = new_items;
-    list->capacity = new_cap;
+    new_items = Realloc(li->items, new_cap * sizeof(item_ty));
+    li->items = new_items;
+    li->capacity = new_cap;
     return 0;
 }
 
-static int list_append(struct HSTKList *lo, item_ty item)
+int TKList_append(TKList li, item_ty item)
 {
-    struct List *list = lo->attr;
-    if (list->capacity == list->used &&
-            list_resize(lo, list->capacity + 1) == -1)
+    if (li->capacity == li->used &&
+            resize(li, li->capacity + 1) == -1)
         return -1;
-    list->items[list->used++] = item;
+    li->items[li->used++] = item;
     return 0;
 }
 
-
-static int list_insert(struct HSTKList *lo, item_ty item, int pos)
+int TKList_insert(TKList li, item_ty item, int pos)
 {
-    struct List *list = lo->attr;
     int idx;
-    if (pos < 0 || pos > list->used)
-        hstk_error_msg("HSTKList: Insert position out of range");
+    if (pos < 0 || pos > li->used)
+        hstk_error_msg("List: Insert position out of range");
 
-    if (pos == list->used)
-        return list_append(lo, item);
+    if (pos == li->used)
+        return TKList_append(li, item);
 
-    if (list->capacity == list->used &&
-            list_resize(lo, list->capacity + 1) == -1)
+    if (li->capacity == li->used &&
+            resize(li, li->capacity + 1) == -1)
         return -1;
 
-    for (idx = list->used; idx > pos; idx--)
-        list->items[idx] = list->items[idx - 1];
-    list->items[pos] = item;
-    list->used++;
+    for (idx = li->used; idx > pos; idx--)
+        li->items[idx] = li->items[idx - 1];
+    li->items[pos] = item;
+    li->used++;
 
     return 0;
 }
 
-static item_ty list_pop(struct HSTKList *lo)
+item_ty TKList_pop(TKList li)
 {
-    struct List *list = lo->attr;
     item_ty item;
 
-    item = list->items[list->used];
-    list->items[list->used--] = NULL;
+    item = li->items[li->used];
+    li->items[li->used--] = NULL;
 
     return item;
 }
 
-static int list_remove(struct HSTKList *lo, item_ty item)
+int TKList_remove(TKList li, item_ty item)
 {
-    struct List *list = lo->attr;
     int idx;
 
-    for (idx = 0; idx < list->used; idx++)
-        if (item == list->items[idx])
+    for (idx = 0; idx < li->used; idx++)
+        if (item == li->items[idx])
             break;
 
-    if (idx == list->used)
-        hstk_error_msg("HSTKList: Remove not have this item");
-    if (idx == list->used - 1) {
-        list_pop(lo);
+    if (idx == li->used)
+        hstk_error_msg("List: Remove not have this item");
+    if (idx == li->used - 1) {
+        TKList_pop(li);
         return 0;
     }
 
-    for (; idx < list->used; idx++)
-        list->items[idx] = list->items[idx + 1];
+    for (; idx < li->used; idx++)
+        li->items[idx] = li->items[idx + 1];
 
-    list->used -= 1;
+    li->used -= 1;
     return 0;
 }
 
-static item_ty list_get_item(struct HSTKList *lo, int pos)
+item_ty TKList_get_item(TKList li, int pos)
 {
-    struct List *list = lo->attr;
-    if (pos < 0 || pos > list->used)
-        hstk_error_msg("HSTKList: GetItem position out of range");
+    if (pos < 0 || pos > li->used)
+        hstk_error_msg("List: GetItem position out of range");
 
-    return list->items[pos];
+    return li->items[pos];
 }
 
-static int list_len(struct HSTKList *lo)
+int TKList_len(TKList li)
 {
-    struct List *list = lo->attr;
-    return list->used;
+    return li->used;
 }
 
-static int list_clear(struct HSTKList *lo)
+int TKList_clear(TKList li)
 {
-    struct List *list = lo->attr;
-
-    Free(list->items);
-    list->items = NULL;
-    list->used = 0;
-    list->capacity = 0;
+    Free(li->items);
+    li->items = NULL;
+    li->used = 0;
+    li->capacity = 0;
 
     return 0;
 }
 
-struct HSTKList *HSTK_list_new()
+TKList TKList_new()
 {
-    struct HSTKList *list_obj = Malloc(sizeof(struct HSTKList));
-    struct List *list = Malloc(sizeof(struct List));
+    TKList list = Malloc(sizeof(struct TKList_));
     list->capacity = 0;
     list->used = 0;
     list->items = NULL;
+    return list;
+}
 
-    list_obj->append = &list_append;
-    list_obj->insert = &list_insert;
-    list_obj->pop = &list_pop;
-    list_obj->remove = &list_remove;
-    list_obj->get_item = &list_get_item;
-    list_obj->len = &list_len;
-    list_obj->clear = &list_clear;
+void TKList_destory(TKList list)
+{
+    if (list->items != NULL)
+        Free(list->items);
+    Free(list);
+}
+
+/* Oriented Object */
+static int lo_append(TKListObj lo, item_ty item)
+{
+    TKList list = lo->attr;
+    return TKList_append(list, item);
+}
+
+static int lo_insert(TKListObj lo, item_ty item, int pos)
+{
+    TKList list = lo->attr;
+    return TKList_insert(list, item, pos);
+}
+
+static item_ty lo_pop(TKListObj lo)
+{
+    TKList list = lo->attr;
+    return TKList_pop(list);
+}
+
+static int lo_remove(TKListObj lo, item_ty item)
+{
+    TKList list = lo->attr;
+    return TKList_remove(list, item);
+}
+
+static item_ty lo_get_item(TKListObj lo, int pos)
+{
+    TKList list = lo->attr;
+    return TKList_get_item(list, pos);
+}
+
+static int lo_len(TKListObj lo)
+{
+    TKList list = lo->attr;
+    return TKList_len(list);
+}
+
+static int lo_clear(TKListObj lo)
+{
+    TKList list = lo->attr;
+    return TKList_clear(list);
+}
+
+TKListObj TKListObj_new()
+{
+    TKListObj list_obj = Malloc(sizeof(struct TKListObj_));
+    TKList list = TKList_new();
+
+    list_obj->append = &lo_append;
+    list_obj->insert = &lo_insert;
+    list_obj->pop = &lo_pop;
+    list_obj->remove = &lo_remove;
+    list_obj->get_item = &lo_get_item;
+    list_obj->len = &lo_len;
+    list_obj->clear = &lo_clear;
     list_obj->attr = list;
     return list_obj;
 }
 
-void HSTK_list_destory(struct HSTKList *lo)
+void TKListObj_destory(TKListObj lo)
 {
-    struct List *list = lo->attr;
-    if (list->items != NULL)
-        Free(list->items);
-    Free(list);
+    TKList list = lo->attr;
+    TKList_destory(list);
     Free(lo);
 }

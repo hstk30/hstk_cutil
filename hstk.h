@@ -6,9 +6,12 @@
 #include <errno.h>
 #include <string.h>
 
+typedef char bool;
 #define TRUE 1
 #define FALSE 0
 
+/* 0 mean function call success, 1 mean fail */
+typedef int ret_flag;
 
 void hstk_error_msg(char *msg);
 

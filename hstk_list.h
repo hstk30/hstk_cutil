@@ -8,21 +8,40 @@
 
 #include "hstk.h" 
 
+
 typedef void *item_ty;
 
-struct HSTKList {
-    int     (* append)     (struct HSTKList *, item_ty);
-    int     (* insert)     (struct HSTKList *, item_ty, int);
-    item_ty (* pop)        (struct HSTKList *);
-    int     (* remove)     (struct HSTKList *, item_ty);
-    item_ty (* get_item)   (struct HSTKList *, int);
-    int     (* len)        (struct HSTKList *);
-    int     (* clear)      (struct HSTKList *);
-    void    *attr;  /* should not access by user */
+/* traditional  */
+typedef struct TKList_ *TKList;
+
+TKList TKList_new();
+
+int TKList_append(TKList, item_ty);
+int TKList_insert(TKList, item_ty, int);
+item_ty TKList_pop(TKList);
+int TKList_remove(TKList, item_ty);
+item_ty TKList_get_item(TKList, int);
+int TKList_len(TKList);
+int TKList_clear(TKList);
+
+void TKList_destory(TKList);
+
+/* Oriented Object */
+typedef struct TKListObj_ *TKListObj;
+
+struct TKListObj_ {
+    int     (* append)     (TKListObj, item_ty);
+    int     (* insert)     (TKListObj, item_ty, int);
+    item_ty (* pop)        (TKListObj);
+    int     (* remove)     (TKListObj, item_ty);
+    item_ty (* get_item)   (TKListObj, int);
+    int     (* len)        (TKListObj);
+    int     (* clear)      (TKListObj);
+    TKList  attr;  
 };
 
-struct HSTKList *HSTK_list_new();
-void HSTK_list_destory(struct HSTKList *);
+TKListObj TKListObj_new();
+void TKListObj_destory(TKListObj);
 
 #endif /* ifndef HSTK_LIST_H_ */
 
